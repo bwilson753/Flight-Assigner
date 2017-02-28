@@ -1,0 +1,1121 @@
+Script started on Thu 24 Nov 2016 11:37:31 AM EST
+rwilson@topcat:~/cs630/hw4$ exitsqlplus rwilson/rwilson@//dbs3.cs.umb.edu/dbs3 
+
+SQL*Plus: Release 12.1.0.2.0 Production on Thu Nov 24 11:37:37 2016
+
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+
+Last Successful login time: Thu Nov 24 2016 11:36:37 -05:00
+
+Connected to:
+Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+
+SQL> set echo on
+SQL> @dropairdb.sql
+SQL> drop table new_location;
+
+Table dropped.
+
+SQL> drop table certified1;
+
+Table dropped.
+
+SQL> drop table flight_assignments;
+
+Table dropped.
+
+SQL> drop table delayed_flights;
+
+Table dropped.
+
+SQL> drop table start_location;
+
+Table dropped.
+
+SQL> drop table aircraft1;
+
+Table dropped.
+
+SQL> drop table employees1;
+
+Table dropped.
+
+SQL> drop table flights1;
+
+Table dropped.
+
+SQL> @createairdb.swl  ql
+SQL> --
+SQL> --	Database Table Creation for hw4 database
+SQL> -- use modified tablenames to avoid collision with old queries
+SQL> -- use timestamp for time so we can order by time, etc.
+SQL> -- add is_processed to flights for second version
+SQL> -- flights departs: timestamp 2005-04-12 8:15:00 for example
+SQL> create table flights1(
+  2  	     flno int primary key,
+  3  	     origin varchar(20) not null,
+  4  	     destination varchar(20) not null,
+  5  	     distance int,
+  6  	     departs timestamp,
+  7  	     arrives timestamp,
+  8  	     price decimal(7,2),
+  9  	     is_processed int
+ 10  	     );
+
+Table created.
+
+SQL> create table aircraft1(
+  2  	     aid int primary key,
+  3  	     aname varchar(30) not null unique,
+  4  	     cruisingrange int
+  5  	     );
+
+Table created.
+
+SQL> create table employees1(
+  2  	     eid int primary key,
+  3  	     ename varchar(30) not null,
+  4  	     salary decimal(10,2)
+  5  	     );
+
+Table created.
+
+SQL> create table certified1(
+  2  	     eid int,
+  3  	     aid int,
+  4  	     primary key(eid,aid),
+  5  	     foreign key(eid) references employees1(eid),
+  6  	     foreign key(aid) references aircraft1(aid)
+  7  	     );
+
+Table created.
+
+SQL> create table start_location(
+  2  	     eid int primary key,
+  3  	     city varchar(20) not null
+  4  	     );
+
+Table created.
+
+SQL> create table flight_assignments(
+  2  	    flno int,
+  3  	    aid int,
+  4  	    eid int,
+  5  	    primary key (eid), -- only one pilot per flight
+  6  	    foreign key (flno) references flights1 (flno),
+  7  	    foreign key (aid) references aircraft1 (aid),
+  8  	    foreign key (eid) references employees1 (eid)
+  9  	    );
+
+Table created.
+
+SQL> create table delayed_flights (
+  2  	    flno int --,
+  3  	    -- primary key (flno),
+  4  	    -- foreign key (flno) references flights1 (flno)
+  5  	    );
+
+Table created.
+
+SQL> create table new_location (
+  2  	    eid int,
+  3  	    city varchar(20),
+  4  	    -- city timestamp,
+  5  	    arrival_time varchar(30) -- ,
+  6  	    -- primary key (eid)
+  7  	    -- foreign key (flno) references flights1 (flno),
+  8  	    -- foreign key (arrival_time) references flights1 (arrives),
+  9  	    -- foreign key (eid) references employees1 (eid)
+ 10  	    );
+
+Table created.
+
+SQL> insert into flights1 values (99,'Los Angeles','Washington D.C.',2308,timestamp '2005-04-12 09:30:00',timestamp '2005-04-12 21:40:00',235.98,0);
+
+1 row created.
+
+SQL> insert into flights1 values (13,'Los Angeles','Chicago',1749,timestamp '2005-04-12 08:45:00',timestamp '2005-04-12 20:45:00',220.98,0);
+
+1 row created.
+
+SQL> insert into flights1 values (346,'Los Angeles','Dallas',1251,timestamp '2005-04-12 11:50:00',timestamp '2005-04-12 19:05:00',225.43,0);
+
+1 row created.
+
+SQL> insert into flights1 values (387,'Los Angeles','Boston',2606,timestamp '2005-04-12 07:03:00',timestamp '2005-04-12 17:03:00',261.56,0);
+
+1 row created.
+
+SQL> insert into flights1 values (7,'Los Angeles','Sydney',7487,timestamp '2005-04-12 22:30:00',timestamp '2005-04-14 6:10:00',1278.56,0);
+
+1 row created.
+
+SQL> insert into flights1 values (2,'Los Angeles','Tokyo',5478,timestamp '2005-04-12 12:30:00',timestamp '2005-04-13 15:55:00',780.99,0);
+
+1 row created.
+
+SQL> insert into flights1 values (33,'Los Angeles','Honolulu',2551,timestamp '2005-04-12 09:15:00',timestamp '2005-04-12 11:15:00',375.23,0);
+
+1 row created.
+
+SQL> insert into flights1 values (34,'Los Angeles','Honolulu',2551,timestamp '2005-04-12 12:45:00',timestamp '2005-04-12 15:18:00',425.98,0);
+
+1 row created.
+
+SQL> insert into flights1 values (76,'Chicago','Los Angeles',1749,timestamp '2005-04-12 08:32:00',timestamp '2005-04-12 10:03:00',220.98,0);
+
+1 row created.
+
+SQL> insert into flights1 values (68,'Chicago','New York',802,timestamp '2005-04-12 09:00:00',timestamp '2005-04-12 12:02:00',202.45,0);
+
+1 row created.
+
+SQL> insert into flights1 values (7789,'Madison','Detroit',319,timestamp '2005-04-12 06:15:00',timestamp '2005-04-12 08:19:00',120.33,0);
+
+1 row created.
+
+SQL> insert into flights1 values (701,'Detroit','New York',470,timestamp '2005-04-12 08:55:00',timestamp '2005-04-12 10:26:00',180.56,0);
+
+1 row created.
+
+SQL> insert into flights1 values (702,'Madison','New York',789,timestamp '2005-04-12 07:05:00',timestamp '2005-04-12 10:12:00',202.34,0);
+
+1 row created.
+
+SQL> insert into flights1 values (4884,'Madison','Chicago',84,timestamp '2005-04-12 22:12:00',timestamp '2005-04-12 23:02:00',112.45,0);
+
+1 row created.
+
+SQL> insert into flights1 values (2223,'Madison','Pittsburgh',517,timestamp '2005-04-12 08:02:00',timestamp '2005-04-12 10:01:00',189.98,0);
+
+1 row created.
+
+SQL> insert into flights1 values (5694,'Madison','Minneapolis',247,timestamp '2005-04-12 08:32:00',timestamp '2005-04-12 09:33:00',120.11,0);
+
+1 row created.
+
+SQL> insert into flights1 values (304,'Minneapolis','New York',991,timestamp '2005-04-12 10:00:00',timestamp '2005-04-12 1:39:00',101.56,0);
+
+1 row created.
+
+SQL> insert into flights1 values (149,'Pittsburgh','New York',303,timestamp '2005-04-12 09:42:00',timestamp '2005-04-12 12:09:00',116.50,0);
+
+1 row created.
+
+SQL> insert into aircraft1 values (1,'Boeing 747-400',8430);
+
+1 row created.
+
+SQL> insert into aircraft1 values (2,'Boeing 737-800',3383);
+
+1 row created.
+
+SQL> insert into aircraft1 values (3,'Airbus A340-300',7120);
+
+1 row created.
+
+SQL> insert into aircraft1 values (4,'British Aerospace Jetstream 41',1502);
+
+1 row created.
+
+SQL> insert into aircraft1 values (5,'Embraer ERJ-145',1530);
+
+1 row created.
+
+SQL> insert into aircraft1 values (6,'SAAB 340',2128);
+
+1 row created.
+
+SQL> insert into aircraft1 values (7,'Piper Archer III',520);
+
+1 row created.
+
+SQL> insert into aircraft1 values (8,'Tupolev 154',4103);
+
+1 row created.
+
+SQL> insert into aircraft1 values (16,'Schwitzer 2-33',30);
+
+1 row created.
+
+SQL> insert into aircraft1 values (9,'Lockheed L1011',6900);
+
+1 row created.
+
+SQL> insert into aircraft1 values (10,'Boeing 757-300',4010);
+
+1 row created.
+
+SQL> insert into aircraft1 values (11,'Boeing 777-300',6441);
+
+1 row created.
+
+SQL> insert into aircraft1 values (12,'Boeing 767-400ER',6475);
+
+1 row created.
+
+SQL> insert into aircraft1 values (13,'Airbus A320',2605);
+
+1 row created.
+
+SQL> insert into aircraft1 values (14,'Airbus A319',1805);
+
+1 row created.
+
+SQL> insert into aircraft1 values (15,'Boeing 727',1504);
+
+1 row created.
+
+SQL> 
+SQL> insert into employees1 values (242518965,'James Smith',20433);
+
+1 row created.
+
+SQL> insert into employees1 values (141582651,'Mary Johnson',178345);
+
+1 row created.
+
+SQL> insert into employees1 values (011564812,'John Williams',153972);
+
+1 row created.
+
+SQL> insert into employees1 values (567354612,'Lisa Walker',256481);
+
+1 row created.
+
+SQL> insert into employees1 values (552455318,'Larry West',101745);
+
+1 row created.
+
+SQL> insert into employees1 values (550156548,'Karen Scott',205187);
+
+1 row created.
+
+SQL> insert into employees1 values (390487451,'Lawrence Sperry',212156);
+
+1 row created.
+
+SQL> insert into employees1 values (274878974,'Michael Miller',99890);
+
+1 row created.
+
+SQL> insert into employees1 values (254099823,'Patricia Jones',24450);
+
+1 row created.
+
+SQL> insert into employees1 values (356187925,'Robert Brown',44740);
+
+1 row created.
+
+SQL> insert into employees1 values (355548984,'Angela Martinez',212156 );
+
+1 row created.
+
+SQL> insert into employees1 values (310454876,'Joseph Thompson',212156);
+
+1 row created.
+
+SQL> insert into employees1 values (489456522,'Linda Davis',27984);
+
+1 row created.
+
+SQL> insert into employees1 values (489221823,'Richard Jackson',23980);
+
+1 row created.
+
+SQL> insert into employees1 values (548977562,'William Ward',84476);
+
+1 row created.
+
+SQL> insert into employees1 values (310454877,'Chad Stewart',33546);
+
+1 row created.
+
+SQL> insert into employees1 values (142519864,'Betty Adams',227489);
+
+1 row created.
+
+SQL> insert into employees1 values (269734834,'George Wright',289950);
+
+1 row created.
+
+SQL> insert into employees1 values (287321212,'Michael Miller',48090);
+
+1 row created.
+
+SQL> insert into employees1 values (552455348,'Dorthy Lewis',152013);
+
+1 row created.
+
+SQL> insert into employees1 values (248965255,'Barbara Wilson',43723);
+
+1 row created.
+
+SQL> insert into employees1 values (159542516,'William Moore',48250);
+
+1 row created.
+
+SQL> insert into employees1 values (348121549,'Haywood Kelly',32899);
+
+1 row created.
+
+SQL> insert into employees1 values (090873519,'Elizabeth Taylor',32021);
+
+1 row created.
+
+SQL> insert into employees1 values (486512566,'David Anderson',43001);
+
+1 row created.
+
+SQL> insert into employees1 values (619023588,'Jennifer Thomas',54921);
+
+1 row created.
+
+SQL> insert into employees1 values (015645489,'Donald King',18050);
+
+1 row created.
+
+SQL> insert into employees1 values (556784565,'Mark Young',205187);
+
+1 row created.
+
+SQL> insert into employees1 values (573284895,'Eric Cooper',114323);
+
+1 row created.
+
+SQL> insert into employees1 values (574489456,'William Jones',105743);
+
+1 row created.
+
+SQL> insert into employees1 values (574489457,'Milo Brooks',20);
+
+1 row created.
+
+SQL> insert into certified1 values (567354612,2);
+
+1 row created.
+
+SQL> insert into certified1 values (567354612,10);
+
+1 row created.
+
+SQL> insert into certified1 values (567354612,11);
+
+1 row created.
+
+SQL> insert into certified1 values (567354612,12);
+
+1 row created.
+
+SQL> insert into certified1 values (567354612,15);
+
+1 row created.
+
+SQL> insert into certified1 values (567354612,7);
+
+1 row created.
+
+SQL> insert into certified1 values (567354612,9);
+
+1 row created.
+
+SQL> insert into certified1 values (567354612,3);
+
+1 row created.
+
+SQL> insert into certified1 values (567354612,4);
+
+1 row created.
+
+SQL> insert into certified1 values (567354612,5);
+
+1 row created.
+
+SQL> insert into certified1 values (552455318,2);
+
+1 row created.
+
+SQL> insert into certified1 values (552455318,14);
+
+1 row created.
+
+SQL> insert into certified1 values (550156548,1);
+
+1 row created.
+
+SQL> insert into certified1 values (550156548,12);
+
+1 row created.
+
+SQL> insert into certified1 values (390487451,3);
+
+1 row created.
+
+SQL> insert into certified1 values (390487451,13);
+
+1 row created.
+
+SQL> insert into certified1 values (390487451,14);
+
+1 row created.
+
+SQL> insert into certified1 values (274878974,10);
+
+1 row created.
+
+SQL> insert into certified1 values (274878974,12);
+
+1 row created.
+
+SQL> insert into certified1 values (355548984,8);
+
+1 row created.
+
+SQL> insert into certified1 values (355548984,9);
+
+1 row created.
+
+SQL> insert into certified1 values (310454876,8);
+
+1 row created.
+
+SQL> insert into certified1 values (310454876,9);
+
+1 row created.
+
+SQL> insert into certified1 values (548977562,7);
+
+1 row created.
+
+SQL> insert into certified1 values (142519864,1);
+
+1 row created.
+
+SQL> insert into certified1 values (142519864,11);
+
+1 row created.
+
+SQL> insert into certified1 values (142519864,12);
+
+1 row created.
+
+SQL> insert into certified1 values (142519864,10);
+
+1 row created.
+
+SQL> insert into certified1 values (142519864,3);
+
+1 row created.
+
+SQL> insert into certified1 values (142519864,2);
+
+1 row created.
+
+SQL> insert into certified1 values (142519864,13);
+
+1 row created.
+
+SQL> insert into certified1 values (142519864,7);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,1);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,2);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,3);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,4);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,5);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,6);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,7);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,8);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,9);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,10);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,11);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,12);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,13);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,14);
+
+1 row created.
+
+SQL> insert into certified1 values (269734834,15);
+
+1 row created.
+
+SQL> insert into certified1 values (552455318,7);
+
+1 row created.
+
+SQL> insert into certified1 values (556784565,5);
+
+1 row created.
+
+SQL> insert into certified1 values (556784565,2);
+
+1 row created.
+
+SQL> insert into certified1 values (556784565,3);
+
+1 row created.
+
+SQL> insert into certified1 values (573284895,3);
+
+1 row created.
+
+SQL> insert into certified1 values (573284895,4);
+
+1 row created.
+
+SQL> insert into certified1 values (573284895,5);
+
+1 row created.
+
+SQL> insert into certified1 values (574489456,8);
+
+1 row created.
+
+SQL> insert into certified1 values (574489456,6);
+
+1 row created.
+
+SQL> insert into certified1 values (574489457,7);
+
+1 row created.
+
+SQL> insert into certified1 values (242518965,2);
+
+1 row created.
+
+SQL> insert into certified1 values (242518965,10);
+
+1 row created.
+
+SQL> insert into certified1 values (141582651,2);
+
+1 row created.
+
+SQL> insert into certified1 values (141582651,10);
+
+1 row created.
+
+SQL> insert into certified1 values (141582651,12);
+
+1 row created.
+
+SQL> insert into certified1 values (011564812,2);
+
+1 row created.
+
+SQL> insert into certified1 values (011564812,10);
+
+1 row created.
+
+SQL> insert into certified1 values (356187925,6);
+
+1 row created.
+
+SQL> insert into certified1 values (159542516,5);
+
+1 row created.
+
+SQL> insert into certified1 values (159542516,7);
+
+1 row created.
+
+SQL> insert into certified1 values (090873519,6);
+
+1 row created.
+
+SQL> insert into start_location values (242518965,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (141582651,'Chicago');
+
+1 row created.
+
+SQL> insert into start_location values (011564812,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (567354612,'Chicago');
+
+1 row created.
+
+SQL> insert into start_location values (552455318,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (550156548,'Chicago');
+
+1 row created.
+
+SQL> insert into start_location values (390487451,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (274878974,'Madison');
+
+1 row created.
+
+SQL> insert into start_location values (254099823,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (356187925,'Madison');
+
+1 row created.
+
+SQL> insert into start_location values (355548984,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (310454876,'Madison');
+
+1 row created.
+
+SQL> insert into start_location values (489456522,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (489221823,'Madison');
+
+1 row created.
+
+SQL> insert into start_location values (548977562,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (310454877,'Madison');
+
+1 row created.
+
+SQL> insert into start_location values (142519864,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (269734834,'Madison');
+
+1 row created.
+
+SQL> insert into start_location values (287321212,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (552455348,'Madison');
+
+1 row created.
+
+SQL> insert into start_location values (248965255,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (159542516,'Madison');
+
+1 row created.
+
+SQL> insert into start_location values (348121549,'Los Angeles');
+
+1 row created.
+
+SQL> insert into start_location values (090873519,'Madison');
+
+1 row created.
+
+SQL> insert into start_location values (486512566,'Detroit');
+
+1 row created.
+
+SQL> insert into start_location values (619023588,'Madison');
+
+1 row created.
+
+SQL> insert into start_location values (015645489,'Detroit');
+
+1 row created.
+
+SQL> insert into start_location values (556784565,'Minneapolis');
+
+1 row created.
+
+SQL> insert into start_location values (573284895,'Boston');
+
+1 row created.
+
+SQL> insert into start_location values (574489456,'San Francisco');
+
+1 row created.
+
+SQL> insert into start_location values (574489457,'Minneapolis');
+
+1 row created.
+
+SQL> exit
+Disconnected from Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+rwilson@topcat:~/cs630/hw4$ sqlplus rwilson/rwilson@//dbs3.cs.umb.edu/dbs3 [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cexit[Ksqlplus rwilson/rwilson@//dbs3.cs.umb.edu/dbs3 [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cjava -cp ojdbc6.jar:. AssignFlights2[Kc *.java[K
+Picked up _JAVA_OPTIONS: -Djava.security.egd=file:/dev/../dev/urandom
+rwilson@topcat:~/cs630/hw4$ javac *.javasqlplus rwilson/rwilson@//dbs3.cs.umb.edu/dbs3 [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cexit[Ksqlplus rwilson/rwilson@//dbs3.cs.umb.edu/dbs3 [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cjava -cp ojdbc6.jar:. AssignFlights2[K
+Picked up _JAVA_OPTIONS: -Djava.security.egd=file:/dev/../dev/urandom
+rwilson@topcat:~/cs630/hw4$ java -cp ojdbc6.jar:. AssignFlights2c *.java[Ksqlplus rwilson/rwilson@//dbs3.cs.umb.edu/dbs3 
+
+SQL*Plus: Release 12.1.0.2.0 Production on Thu Nov 24 11:38:48 2016
+
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+
+Last Successful login time: Thu Nov 24 2016 11:37:52 -05:00
+
+Connected to:
+Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+
+SQL> set echo on
+SQL> @assign.sql
+SQL> select *
+  2  from flight_assignments
+  3  order by flno;
+
+      FLNO	  AID	     EID
+---------- ---------- ----------
+	76	   12  141582651
+       387	    2	11564812
+       702	    4  269734834
+      2223	    5  159542516
+      5694	    6	90873519
+      7789	    7  142519864
+
+6 rows selected.
+
+SQL> 
+SQL> select *
+  2  from delayed_flights;
+
+      FLNO
+----------
+	13
+       701
+	68
+	33
+	99
+       149
+       304
+       346
+	 2
+	34
+      4884
+
+      FLNO
+----------
+	 7
+
+12 rows selected.
+
+SQL> 
+SQL> select *
+  2  from new_location;
+
+no rows selected
+
+SQL> 
+SQL> select *
+  2  from flights1;
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+	99 Los Angeles		Washington D.C. 	   2308
+12-APR-05 09.30.00.000000 AM
+12-APR-05 09.40.00.000000 PM
+    235.98	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+	13 Los Angeles		Chicago 		   1749
+12-APR-05 08.45.00.000000 AM
+12-APR-05 08.45.00.000000 PM
+    220.98	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+       346 Los Angeles		Dallas			   1251
+12-APR-05 11.50.00.000000 AM
+12-APR-05 07.05.00.000000 PM
+    225.43	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+       387 Los Angeles		Boston			   2606
+12-APR-05 07.03.00.000000 AM
+12-APR-05 05.03.00.000000 PM
+    261.56	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+	 7 Los Angeles		Sydney			   7487
+12-APR-05 10.30.00.000000 PM
+14-APR-05 06.10.00.000000 AM
+   1278.56	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+	 2 Los Angeles		Tokyo			   5478
+12-APR-05 12.30.00.000000 PM
+13-APR-05 03.55.00.000000 PM
+    780.99	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+	33 Los Angeles		Honolulu		   2551
+12-APR-05 09.15.00.000000 AM
+12-APR-05 11.15.00.000000 AM
+    375.23	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+	34 Los Angeles		Honolulu		   2551
+12-APR-05 12.45.00.000000 PM
+12-APR-05 03.18.00.000000 PM
+    425.98	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+	76 Chicago		Los Angeles		   1749
+12-APR-05 08.32.00.000000 AM
+12-APR-05 10.03.00.000000 AM
+    220.98	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+	68 Chicago		New York		    802
+12-APR-05 09.00.00.000000 AM
+12-APR-05 12.02.00.000000 PM
+    202.45	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+      7789 Madison		Detroit 		    319
+12-APR-05 06.15.00.000000 AM
+12-APR-05 08.19.00.000000 AM
+    120.33	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+       701 Detroit		New York		    470
+12-APR-05 08.55.00.000000 AM
+12-APR-05 10.26.00.000000 AM
+    180.56	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+       702 Madison		New York		    789
+12-APR-05 07.05.00.000000 AM
+12-APR-05 10.12.00.000000 AM
+    202.34	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+      4884 Madison		Chicago 		     84
+12-APR-05 10.12.00.000000 PM
+12-APR-05 11.02.00.000000 PM
+    112.45	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+      2223 Madison		Pittsburgh		    517
+12-APR-05 08.02.00.000000 AM
+12-APR-05 10.01.00.000000 AM
+    189.98	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+      5694 Madison		Minneapolis		    247
+12-APR-05 08.32.00.000000 AM
+12-APR-05 09.33.00.000000 AM
+    120.11	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+       304 Minneapolis		New York		    991
+12-APR-05 10.00.00.000000 AM
+12-APR-05 01.39.00.000000 AM
+    101.56	      1
+
+
+      FLNO ORIGIN		DESTINATION	       DISTANCE
+---------- -------------------- -------------------- ----------
+DEPARTS
+---------------------------------------------------------------------------
+ARRIVES
+---------------------------------------------------------------------------
+     PRICE IS_PROCESSED
+---------- ------------
+       149 Pittsburgh		New York		    303
+12-APR-05 09.42.00.000000 AM
+12-APR-05 12.09.00.000000 PM
+     116.5	      1
+
+
+18 rows selected.
+
+SQL> exit
+Disconnected from Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+rwilson@topcat:~/cs630/hw4$ exit
+exit
+
+Script done on Thu 24 Nov 2016 11:39:08 AM EST
